@@ -5,19 +5,17 @@ import requests
 
 # --- CONFIGURAZIONE ---
 cartella_script = os.path.dirname(os.path.abspath(__file__))
-# Il file deve chiamarsi esattamente così nella cartella dello script
 DB_PATH = os.path.join(cartella_script, 'Lista articoli.XLSX')
-# URL AGGIORNATO PER TREVIGLIO
-FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSd_5OZf6eRhPukufmAwqEYiKpOMUIAMgpX-nG2UJNDP9HLVNQ/formResponse"
+# URL ORIGINALE PER CASTEL ROZZONE
+FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLScm1lJ8IhUnT9HwVehKgTbKj9WQomCMagGLTwjOHPi31vPiBQ/formResponse"
 
-st.set_page_config(page_title="CRI Treviglio - Scarico", layout="wide")
-st.title("🚑 Lavagna Digitale - CRI Treviglio")
+st.set_page_config(page_title="CRI Castel Rozzone - Scarico", layout="wide")
+st.title("🚑 Lavagna Digitale - CRI Castel Rozzone")
 
 @st.cache_data
 def carica_dati():
     if os.path.exists(DB_PATH):
         try:
-            # skiprows=1 serve perché il tuo file Excel ha un'intestazione con la data nella prima riga
             df = pd.read_excel(DB_PATH, skiprows=1)
             df.columns = [str(c).strip() for c in df.columns]
             return df
@@ -30,7 +28,6 @@ if df_prodotti is not None:
     cerca = st.text_input("COSA HAI PRESO?", "").strip().lower()
     
     if cerca:
-        # Filtro sulla colonna Descrizione
         risultati = df_prodotti[df_prodotti['Descrizione'].astype(str).str.contains(cerca, case=False, na=False)]
         
         if not risultati.empty:
@@ -48,16 +45,12 @@ if df_prodotti is not None:
                     with col3:
                         st.write(" ")
                         if st.button("SCARICA ✅", key=f"btn_{codice_mambu}", use_container_width=True):
-                            
-                            # PAYLOAD CON ID CAMPI PER TREVIGLIO
                             payload = {
-                                "entry.1921919747": nome_articolo,   # ARTICOLO
-                                "entry.1949015185": codice_mambu,    # CODICE
-                                "entry.1928057596": str(qta)         # QUANTITA
+                                "entry.1921919747": nome_articolo,
+                                "entry.1949015185": codice_mambu,
+                                "entry.1928057596": str(qta)
                             }
-                            
                             try:
-                                # Invio silente
                                 r = requests.post(FORM_URL, data=payload)
                                 if r.status_code == 200:
                                     st.balloons()
@@ -69,4 +62,4 @@ if df_prodotti is not None:
         else:
             st.warning("Nessun articolo trovato.")
 else:
-    st.error("File Excel non trovato! Assicurati che il file si chiami 'Lista articoli.XLSX'")
+    st.error("File Excel non trovato!")
